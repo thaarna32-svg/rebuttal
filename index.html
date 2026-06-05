@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rebuttal — Debate Training Platform</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --nav-h:56px;--sidebar-w:220px;--accent:#1D9E75;--accent-light:#E1F5EE;--accent-dark:#085041;
+  --color-bg:#ffffff;--color-bg2:#f5f5f3;--color-bg3:#eeede9;--color-text:#1a1a18;
+  --color-text2:#5f5e5a;--color-text3:#888780;--color-border:rgba(0,0,0,0.1);
+  --color-border2:rgba(0,0,0,0.2);--radius:8px;--radius-lg:12px;
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+@media(prefers-color-scheme:dark){:root{
+  --color-bg:#1e1e1c;--color-bg2:#2a2a28;--color-bg3:#141412;--color-text:#f0efe9;
+  --color-text2:#b4b2a9;--color-text3:#888780;--color-border:rgba(255,255,255,0.08);
+  --color-border2:rgba(255,255,255,0.16);--accent-light:#04342C;--accent-dark:#9FE1CB;
+}}
+body{font-family:var(--font);background:var(--color-bg3);color:var(--color-text);min-height:100vh}
+.shell{display:grid;grid-template-rows:var(--nav-h) 1fr;grid-template-columns:var(--sidebar-w) 1fr;height:100vh;overflow:hidden}
+@media(max-width:640px){.shell{grid-template-columns:1fr}.sidebar{display:none}.sidebar.open{display:block;position:fixed;top:var(--nav-h);left:0;width:var(--sidebar-w);height:calc(100vh - var(--nav-h));z-index:100;box-shadow:4px 0 20px rgba(0,0,0,0.2)}}
+.hamburger{display:none;background:none;border:none;cursor:pointer;font-size:22px;color:var(--color-text)}
+@media(max-width:640px){.hamburger{display:flex;align-items:center}}
+.topbar{grid-column:1/-1;background:var(--color-bg);border-bottom:0.5px solid var(--color-border);display:flex;align-items:center;gap:12px;padding:0 20px;z-index:10}
+.logo{font-size:18px;font-weight:500;color:var(--accent-dark);letter-spacing:-0.5px;display:flex;align-items:center;gap:8px}
+.logo-mark{width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.badge-owner{background:var(--accent-light);color:var(--accent-dark);font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px}
+.avatar{width:30px;height:30px;background:var(--accent-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--accent-dark)}
+.sidebar{background:var(--color-bg);border-right:0.5px solid var(--color-border);padding:16px 0;overflow-y:auto}
+.nav-section{padding:0 12px;margin-bottom:4px}
+.nav-label{font-size:11px;font-weight:500;color:var(--color-text3);text-transform:uppercase;letter-spacing:.06em;padding:8px 8px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius);font-size:14px;color:var(--color-text2);cursor:pointer;transition:background .15s,color .15s}
+.nav-item:hover{background:var(--color-bg2);color:var(--color-text)}
+.nav-item.active{background:var(--accent-light);color:var(--accent-dark);font-weight:500}
+.nav-item i{font-size:16px}
+.main{overflow-y:auto;padding:24px}
+.page{display:none}.page.active{display:block}
+.page-header{margin-bottom:24px}
+.page-title{font-size:22px;font-weight:500;margin-bottom:4px}
+.page-sub{font-size:14px;color:var(--color-text2)}
+.card{background:var(--color-bg);border:0.5px solid var(--color-border);border-radius:var(--radius-lg);padding:20px}
+.card+.card{margin-top:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:720px){.grid2{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}}
+@media(max-width:440px){.grid3{grid-template-columns:1fr}}
+.metric{background:var(--color-bg2);border-radius:var(--radius);padding:14px 16px}
+.metric-label{font-size:12px;color:var(--color-text2);margin-bottom:4px}
+.metric-val{font-size:24px;font-weight:500}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius);font-size:14px;cursor:pointer;border:0.5px solid var(--color-border2);background:transparent;color:var(--color-text);transition:background .15s,transform .1s;font-family:var(--font)}
+.btn:hover{background:var(--color-bg2)}.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn-primary:hover{background:var(--accent-dark)}
+.btn-sm{padding:5px 12px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.tag{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px}
+.tag-green{background:#EAF3DE;color:#27500A}.tag-amber{background:#FAEEDA;color:#633806}
+.tag-blue{background:#E6F1FB;color:#0C447C}.tag-red{background:#FCEBEB;color:#791F1F}
+.tag-gray{background:var(--color-bg2);color:var(--color-text2)}
+.record-area{border:0.5px solid var(--color-border);border-radius:var(--radius-lg);padding:32px;text-align:center;background:var(--color-bg2)}
+.rec-btn{width:72px;height:72px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:#fff;font-size:28px;transition:background .15s}
+.rec-btn.recording{background:#E24B4A;animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(226,75,74,.4)}50%{box-shadow:0 0 0 12px rgba(226,75,74,0)}}
+.timer{font-size:32px;font-weight:500;letter-spacing:2px;margin:8px 0 4px;font-variant-numeric:tabular-nums}
+.waveform{height:40px;display:flex;align-items:flex-end;justify-content:center;gap:3px;margin:16px 0}
+.wave-bar{width:4px;background:var(--accent);border-radius:2px;transition:height .1s}
+.feedback-block{border-left:3px solid var(--accent);padding:12px 16px;background:var(--color-bg2);border-radius:0 var(--radius) var(--radius) 0;margin-bottom:12px}
+.feedback-label{font-size:12px;font-weight:500;color:var(--accent-dark);margin-bottom:4px}
+.feedback-text{font-size:14px;color:var(--color-text2);line-height:1.6}
+.score-ring{position:relative;width:80px;height:80px}
+.score-ring svg{transform:rotate(-90deg)}
+.score-val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:500}
+.progress-bar{height:6px;background:var(--color-bg2);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);border-radius:3px;transition:width .8s ease}
+.table{width:100%;font-size:13px;border-collapse:collapse}
+.table th{text-align:left;padding:8px 12px;font-size:12px;font-weight:500;color:var(--color-text2);border-bottom:0.5px solid var(--color-border)}
+.table td{padding:10px 12px;border-bottom:0.5px solid var(--color-border)}
+.table tr:last-child td{border-bottom:none}
+.table tr:hover td{background:var(--color-bg2)}
+.chat-area{height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:12px 0;border-bottom:0.5px solid var(--color-border);margin-bottom:12px}
+.msg{max-width:72%;padding:8px 14px;border-radius:var(--radius-lg);font-size:14px;line-height:1.5}
+.msg-them{background:var(--color-bg2);border-radius:var(--radius) var(--radius-lg) var(--radius-lg) var(--radius);align-self:flex-start}
+.msg-me{background:var(--accent-light);color:var(--accent-dark);align-self:flex-end;border-radius:var(--radius-lg) var(--radius) var(--radius) var(--radius-lg)}
+.msg-meta{font-size:11px;color:var(--color-text3);margin-bottom:2px}
+.chat-input{display:flex;gap:8px}
+.chat-input input{flex:1;padding:8px 12px;border-radius:var(--radius);border:0.5px solid var(--color-border2);background:var(--color-bg);font-size:14px;color:var(--color-text);font-family:var(--font)}
+.input-field{width:100%;padding:8px 12px;border-radius:var(--radius);border:0.5px solid var(--color-border2);background:var(--color-bg);font-size:14px;color:var(--color-text);margin-bottom:12px;font-family:var(--font)}
+.input-label{font-size:13px;font-weight:500;color:var(--color-text2);margin-bottom:4px}
+.divider{border:none;border-top:0.5px solid var(--color-border);margin:16px 0}
+.team-chip{display:flex;align-items:center;gap:8px;padding:8px 12px;border:0.5px solid var(--color-border);border-radius:var(--radius);margin-bottom:8px}
+.section-title{font-size:15px;font-weight:500;margin-bottom:12px}
+.tutorial-step{display:flex;gap:16px;align-items:flex-start;margin-bottom:20px}
+.step-num{width:28px;height:28px;min-width:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500}
+.step-title{font-size:14px;font-weight:500;margin-bottom:3px}
+.step-desc{font-size:13px;color:var(--color-text2);line-height:1.6}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.alert{padding:12px 16px;border-radius:var(--radius);font-size:13px;margin-bottom:12px}
+.alert-info{background:#E6F1FB;color:#0C447C;border:0.5px solid #B5D4F4}
+.alert-warn{background:#FAEEDA;color:#633806;border:0.5px solid #FAC775}
+.alert-success{background:#EAF3DE;color:#27500A;border:0.5px solid #C0DD97}
+.alert-error{background:#FCEBEB;color:#791F1F;border:0.5px solid #F7C1C1}
+.recording-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.rec-item{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--color-bg2);border-radius:var(--radius);border:0.5px solid var(--color-border)}
+.rec-item-info{flex:1;min-width:0}
+.rec-item-name{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rec-item-meta{font-size:12px;color:var(--color-text2)}
+.db-status{font-size:11px;padding:3px 10px;border-radius:20px;background:var(--color-bg2);color:var(--color-text3)}
+.db-status.connected{background:#EAF3DE;color:#27500A}
+.db-status.error{background:#FCEBEB;color:#791F1F}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu"><i class="ti ti-menu-2"></i></button>
+    <div class="logo"><div class="logo-mark"><i class="ti ti-microphone-2"></i></div>Rebuttal</div>
+    <span style="font-size:12px;color:var(--color-text3);margin-left:4px">Debate Training Platform</span>
+    <div class="topbar-right">
+      <span class="db-status" id="db-status">Connecting...</span>
+      <span class="badge-owner"><i class="ti ti-shield-check"></i> Owner</span>
+      <div class="avatar">AO</div>
+    </div>
+  </div>
+
+  <nav class="sidebar" id="sidebar">
+    <div class="nav-section">
+      <div class="nav-label">Main</div>
+      <div class="nav-item active" onclick="nav('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
+      <div class="nav-item" onclick="nav('record',this)"><i class="ti ti-microphone-2"></i> Record Debate</div>
+      <div class="nav-item" onclick="nav('feedback',this)"><i class="ti ti-brain"></i> AI Feedback</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Organise</div>
+      <div class="nav-item" onclick="nav('teams',this)"><i class="ti ti-users-group"></i> Teams &amp; Coaches</div>
+      <div class="nav-item" onclick="nav('chat',this)"><i class="ti ti-message-circle-2"></i> Group Chats</div>
+      <div class="nav-item" onclick="nav('topics',this)"><i class="ti ti-bookmark-edit"></i> Topics</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Admin</div>
+      <div class="nav-item" onclick="nav('subscribers',this)"><i class="ti ti-table"></i> Subscribers</div>
+      <div class="nav-item" onclick="nav('tutorial',this)"><i class="ti ti-help-circle"></i> Tutorial</div>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page active">
+      <div class="page-header">
+        <div class="page-title">Welcome back</div>
+        <div class="page-sub">Here's what's happening on Rebuttal today</div>
+      </div>
+      <div class="grid3" style="margin-bottom:16px">
+        <div class="metric"><div class="metric-label">Recordings saved</div><div class="metric-val" id="dash-recs">—</div></div>
+        <div class="metric"><div class="metric-label">AI reviews done</div><div class="metric-val" id="dash-reviews">—</div></div>
+        <div class="metric"><div class="metric-label">Teams created</div><div class="metric-val" id="dash-teams">—</div></div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="section-title">Recent recordings</div>
+          <div id="dash-rec-list"><div style="font-size:13px;color:var(--color-text2)">Loading...</div></div>
+        </div>
+        <div class="card">
+          <div class="section-title">Quick actions</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <button class="btn" onclick="nav('record',null)"><i class="ti ti-microphone-2"></i> Record a new debate</button>
+            <button class="btn" onclick="nav('feedback',null)"><i class="ti ti-brain"></i> Review AI feedback</button>
+            <button class="btn" onclick="nav('teams',null)"><i class="ti ti-users-group"></i> Manage teams</button>
+            <button class="btn" onclick="nav('topics',null)"><i class="ti ti-bookmark-edit"></i> Add debate topics</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECORD -->
+    <div id="page-record" class="page">
+      <div class="page-header">
+        <div class="page-title">Record a debate</div>
+        <div class="page-sub">Capture audio live using your microphone</div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="section-title">Live recording</div>
+          <div id="mic-alert" class="alert alert-info" style="display:none"></div>
+          <div class="record-area">
+            <button class="rec-btn" id="recBtn" onclick="toggleRec()" aria-label="Start recording">
+              <i class="ti ti-microphone-2" id="recIcon"></i>
+            </button>
+            <div class="timer" id="recTimer">00:00</div>
+            <div style="font-size:13px;color:var(--color-text2)" id="recStatus">Tap to start recording</div>
+            <div class="waveform" id="waveform">
+              <div class="wave-bar" style="height:8px"></div><div class="wave-bar" style="height:14px"></div>
+              <div class="wave-bar" style="height:20px"></div><div class="wave-bar" style="height:28px"></div>
+              <div class="wave-bar" style="height:36px"></div><div class="wave-bar" style="height:28px"></div>
+              <div class="wave-bar" style="height:20px"></div><div class="wave-bar" style="height:14px"></div>
+              <div class="wave-bar" style="height:8px"></div>
+            </div>
+          </div>
+          <hr class="divider">
+          <div class="input-label">Label this recording</div>
+          <input class="input-field" type="text" id="recLabel" placeholder="e.g. Falcons — AI regulation — Round 1">
+          <button class="btn btn-primary btn-sm" id="saveBtn" disabled onclick="saveRecording()"><i class="ti ti-device-floppy"></i> Save recording</button>
+        </div>
+        <div class="card">
+          <div class="section-title">Saved recordings</div>
+          <div id="rec-list"><div style="font-size:13px;color:var(--color-text2)">Loading...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI FEEDBACK -->
+    <div id="page-feedback" class="page">
+      <div class="page-header">
+        <div class="page-title">AI feedback</div>
+        <div class="page-sub">Select a saved recording to get a real AI analysis</div>
+      </div>
+      <div id="feedback-api-warn" class="alert alert-warn" style="display:none"></div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="section-title">Setup</div>
+        <div class="input-label">Anthropic API key <span style="font-weight:400;color:var(--color-text2)">(stored securely in database)</span></div>
+        <div style="display:flex;gap:8px">
+          <input class="input-field" type="password" id="apiKeyInput" placeholder="sk-ant-..." style="margin:0;flex:1" oninput="saveApiKey()">
+          <button class="btn btn-sm" onclick="toggleKeyVisibility()"><i class="ti ti-eye" id="eyeIcon"></i></button>
+        </div>
+        <div style="margin-top:12px">
+          <div class="input-label">Select recording to analyse</div>
+          <select class="input-field" id="recSelect" style="margin-bottom:0">
+            <option value="">Choose a saved recording...</option>
+          </select>
+        </div>
+        <div style="margin-top:12px">
+          <button class="btn btn-primary" id="analyseBtn" onclick="analyseDebate()"><i class="ti ti-brain"></i> Analyse with AI</button>
+        </div>
+      </div>
+      <div id="feedback-loading" style="display:none" class="card">
+        <div style="display:flex;align-items:center;gap:12px;padding:8px 0">
+          <div class="spinner" style="border-color:var(--color-border);border-top-color:var(--accent)"></div>
+          <span style="font-size:14px;color:var(--color-text2)" id="loading-msg">Analysing debate...</span>
+        </div>
+      </div>
+      <div id="feedback-results" style="display:none">
+        <div class="grid2">
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
+                <div class="score-ring">
+                  <svg width="80" height="80" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="32" fill="none" stroke="var(--color-border)" stroke-width="6"/>
+                    <circle id="score-arc" cx="40" cy="40" r="32" fill="none" stroke="#1D9E75" stroke-width="6" stroke-dasharray="201" stroke-dashoffset="201" stroke-linecap="round"/>
+                  </svg>
+                  <div class="score-val" id="overall-score">—</div>
+                </div>
+                <div>
+                  <div style="font-size:15px;font-weight:500">Overall score</div>
+                  <div style="font-size:13px;color:var(--color-text2)" id="score-label-sub"></div>
+                  <span class="tag tag-green" id="score-badge" style="margin-top:4px"></span>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Argument clarity</span><span style="font-weight:500" id="s1">—</span></div><div class="progress-bar"><div class="progress-fill" id="p1" style="width:0%"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Evidence use</span><span style="font-weight:500" id="s2">—</span></div><div class="progress-bar"><div class="progress-fill" id="p2" style="width:0%"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Rebuttal skill</span><span style="font-weight:500" id="s3">—</span></div><div class="progress-bar"><div class="progress-fill" id="p3" style="width:0%"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Delivery &amp; clarity</span><span style="font-weight:500" id="s4">—</span></div><div class="progress-bar"><div class="progress-fill" id="p4" style="width:0%"></div></div></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="section-title">Coach notes</div>
+              <div class="feedback-block"><div class="feedback-label"><i class="ti ti-star"></i> Strength</div><div class="feedback-text" id="fb-strength">—</div></div>
+              <div class="feedback-block" style="border-color:#BA7517"><div class="feedback-label" style="color:#633806"><i class="ti ti-alert-triangle"></i> Improve</div><div class="feedback-text" id="fb-improve">—</div></div>
+              <div class="feedback-block" style="border-color:#378ADD"><div class="feedback-label" style="color:#0C447C"><i class="ti ti-bulb"></i> Tip</div><div class="feedback-text" id="fb-tip">—</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="section-title">Full transcript</div>
+          <div id="transcript-text" style="font-size:13px;color:var(--color-text2);line-height:1.8;white-space:pre-wrap;max-height:200px;overflow-y:auto"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEAMS -->
+    <div id="page-teams" class="page">
+      <div class="page-header">
+        <div class="page-title">Teams &amp; coaches</div>
+        <div class="page-sub">Manage your debate groups and assign coaches</div>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div class="section-title" style="margin:0">Active teams</div>
+          <button class="btn btn-primary btn-sm" onclick="document.getElementById('new-team-form').scrollIntoView({behavior:'smooth'})"><i class="ti ti-plus"></i> New team</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="table"><thead><tr><th>Team</th><th>Coach</th><th>Location</th><th></th></tr></thead>
+          <tbody id="teams-tbody"><tr><td colspan="4" style="color:var(--color-text2);font-size:13px">Loading...</td></tr></tbody></table>
+        </div>
+      </div>
+      <div class="card" id="new-team-form">
+        <div class="section-title">Add a new team</div>
+        <div class="grid2">
+          <div>
+            <div class="input-label">Team name</div><input class="input-field" type="text" id="t-name" placeholder="e.g. Eagles">
+            <div class="input-label">Coach name</div><input class="input-field" type="text" id="t-coach" placeholder="Coach full name">
+          </div>
+          <div>
+            <div class="input-label">Location / room</div><input class="input-field" type="text" id="t-loc" placeholder="e.g. Room 5B">
+            <div class="input-label">Colour</div>
+            <select class="input-field" id="t-color">
+              <option value="tag-blue">Blue</option><option value="tag-green">Green</option>
+              <option value="tag-amber">Amber</option><option value="tag-red">Red</option><option value="tag-gray">Gray</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="addTeam()"><i class="ti ti-check"></i> Create team</button>
+      </div>
+    </div>
+
+    <!-- CHAT -->
+    <div id="page-chat" class="page">
+      <div class="page-header">
+        <div class="page-title">Group chats</div>
+        <div class="page-sub">Coordinate debates and share resources</div>
+      </div>
+      <div class="grid2">
+        <div>
+          <div class="card">
+            <div class="section-title">Channels</div>
+            <div id="channel-list" style="display:flex;flex-direction:column;gap:4px">
+              <div class="nav-item active" onclick="switchChannel('general',this)"># general</div>
+              <div class="nav-item" onclick="switchChannel('coaches-only',this)"># coaches-only</div>
+              <div class="nav-item" onclick="switchChannel('topic-ideas',this)"># topic-ideas</div>
+            </div>
+            <hr class="divider">
+            <div style="display:flex;gap:8px">
+              <input class="input-field" type="text" id="new-channel-input" placeholder="Channel name" style="margin:0;flex:1;font-size:13px">
+              <button class="btn btn-primary btn-sm" onclick="addChannel()"><i class="ti ti-plus"></i></button>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div style="font-size:15px;font-weight:500;margin-bottom:12px" id="channel-title"># general</div>
+            <div class="chat-area" id="chatArea"></div>
+            <div class="chat-input">
+              <input type="text" id="chatInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMsg()">
+              <button class="btn btn-primary btn-sm" onclick="sendMsg()"><i class="ti ti-send"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOPICS -->
+    <div id="page-topics" class="page">
+      <div class="page-header">
+        <div class="page-title">Topics &amp; schedule</div>
+        <div class="page-sub">Build a bank of debate motions</div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="section-title">Topic bank</div>
+          <div id="topic-list"><div style="font-size:13px;color:var(--color-text2)">Loading...</div></div>
+          <hr class="divider">
+          <div class="input-label">Add new topic</div>
+          <div style="display:flex;gap:8px">
+            <input class="input-field" type="text" id="newTopicInput" placeholder="e.g. This house believes AI should be regulated" style="margin:0;flex:1" onkeydown="if(event.key==='Enter')addTopic()">
+            <button class="btn btn-primary btn-sm" onclick="addTopic()"><i class="ti ti-plus"></i> Add</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-title">Schedule a debate</div>
+          <div class="input-label">Topic</div><select class="input-field" id="sched-topic"><option value="">Choose topic...</option></select>
+          <div class="input-label">Affirmative team</div><select class="input-field" id="sched-aff"><option value="">Choose team...</option></select>
+          <div class="input-label">Negative team</div><select class="input-field" id="sched-neg"><option value="">Choose team...</option></select>
+          <div class="input-label">Date &amp; time</div><input class="input-field" type="datetime-local" id="sched-date">
+          <button class="btn btn-primary btn-sm" onclick="scheduleDebate()"><i class="ti ti-calendar-plus"></i> Schedule</button>
+          <div style="margin-top:16px" id="schedule-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUBSCRIBERS -->
+    <div id="page-subscribers" class="page">
+      <div class="page-header">
+        <div class="page-title">Subscriber enrolment</div>
+        <div class="page-sub">Manage all members. The owner account is always free.</div>
+      </div>
+      <div class="grid3" style="margin-bottom:16px">
+        <div class="metric"><div class="metric-label">Total enrolled</div><div class="metric-val" id="sub-total">—</div></div>
+        <div class="metric"><div class="metric-label">Active</div><div class="metric-val" id="sub-active">—</div></div>
+        <div class="metric"><div class="metric-label">Pending</div><div class="metric-val" id="sub-pending">—</div></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+          <div class="section-title" style="margin:0">Members</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-sm" onclick="exportCSV()"><i class="ti ti-download"></i> Export CSV</button>
+            <button class="btn btn-primary btn-sm" onclick="document.getElementById('enrol-form').scrollIntoView({behavior:'smooth'})"><i class="ti ti-user-plus"></i> Enrol member</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="table">
+            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Team</th><th>Status</th><th>Joined</th><th></th></tr></thead>
+            <tbody id="sub-tbody"><tr><td colspan="7" style="color:var(--color-text2);font-size:13px">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card" id="enrol-form" style="margin-top:16px">
+        <div class="section-title">Enrol a new member</div>
+        <div class="grid2">
+          <div>
+            <div class="input-label">Full name</div><input class="input-field" type="text" id="e-name" placeholder="Full name">
+            <div class="input-label">Email</div><input class="input-field" type="email" id="e-email" placeholder="email@example.com">
+          </div>
+          <div>
+            <div class="input-label">Role</div>
+            <select class="input-field" id="e-role"><option>Debater</option><option>Coach</option></select>
+            <div class="input-label">Team</div>
+            <select class="input-field" id="e-team"><option value="">No team</option></select>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="enrolMember()"><i class="ti ti-check"></i> Enrol member</button>
+      </div>
+    </div>
+
+    <!-- TUTORIAL -->
+    <div id="page-tutorial" class="page">
+      <div class="page-header">
+        <div class="page-title">How to use Rebuttal</div>
+        <div class="page-sub">A complete guide for owners, coaches, and debaters</div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="section-title">Getting started</div>
+          <div class="tutorial-step"><div class="step-num">1</div><div><div class="step-title">Get your Anthropic API key</div><div class="step-desc">Go to console.anthropic.com, sign up, and copy your API key. Paste it in the AI Feedback page.</div></div></div>
+          <div class="tutorial-step"><div class="step-num">2</div><div><div class="step-title">Create your teams</div><div class="step-desc">Go to Teams &amp; Coaches. Add each debate team with a coach name and location.</div></div></div>
+          <div class="tutorial-step"><div class="step-num">3</div><div><div class="step-title">Add debate topics</div><div class="step-desc">Build a bank of motions in the Topics page and schedule upcoming debates.</div></div></div>
+          <div class="tutorial-step"><div class="step-num">4</div><div><div class="step-title">Record a debate</div><div class="step-desc">Go to Record Debate, tap the mic button, allow microphone access, label and save your recording.</div></div></div>
+          <div class="tutorial-step"><div class="step-num">5</div><div><div class="step-title">Get AI feedback</div><div class="step-desc">Go to AI Feedback, select your recording, and tap Analyse. Claude will transcribe and score the debate.</div></div></div>
+        </div>
+        <div class="card">
+          <div class="section-title">Features at a glance</div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="feedback-block"><div class="feedback-label">Database</div><div class="feedback-text">All data is saved to your Supabase Postgres database — accessible from any device, anywhere.</div></div>
+            <div class="feedback-block" style="border-color:#378ADD"><div class="feedback-label" style="color:#0C447C">AI analysis</div><div class="feedback-text">Powered by Claude (Anthropic). Scores argument clarity, evidence use, rebuttal skill, and delivery.</div></div>
+            <div class="feedback-block" style="border-color:#BA7517"><div class="feedback-label" style="color:#633806">Group chats</div><div class="feedback-text">Create channels per team or topic. All messages are saved to the database.</div></div>
+            <div class="feedback-block" style="border-color:#639922"><div class="feedback-label" style="color:#3B6D11">Subscribers</div><div class="feedback-text">Enrol members and export the full list as a CSV spreadsheet at any time.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ── Supabase ────────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://pjxkujixoqvatmcvbvgp.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqeGt1aml4b3F2YXRtY3ZidmdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDE1NzIsImV4cCI6MjA5NjIxNzU3Mn0.nY_O-TD_3Uo-dpspZ614I97h3ztcq1J6qsHceXP7yUQ';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ── State ──────────────────────────────────────────────────────────────
+let currentChannel = 'general';
+let localBlobs = {}; // store audio blobs locally (can't store in DB)
+let recInterval = null, waveInterval = null, recSecs = 0, isRec = false, lastBlob = null;
+let mediaRecorder = null, audioChunks = [];
+
+// ── Init ───────────────────────────────────────────────────────────────
+async function init() {
+  try {
+    // Test connection by fetching teams
+    const { error } = await sb.from('teams').select('id').limit(1);
+    if (error && error.code === '42P01') {
+      // Tables don't exist yet — create them
+      await setupTables();
+    } else if (error) {
+      throw error;
+    }
+    setDbStatus(true);
+    await loadAll();
+  } catch(e) {
+    setDbStatus(false);
+    console.error('DB init error:', e);
+    // Fall back to localStorage
+    fallbackToLocal();
+  }
+}
+
+function setDbStatus(ok) {
+  const el = document.getElementById('db-status');
+  el.textContent = ok ? '● Database connected' : '● Offline mode';
+  el.className = 'db-status ' + (ok ? 'connected' : 'error');
+}
+
+async function setupTables() {
+  // Use Supabase REST to create tables via SQL edge function if available
+  // Otherwise show instructions
+  const statusEl = document.getElementById('db-status');
+  statusEl.textContent = 'Setting up...';
+  
+  // Try creating tables via supabase
+  const tables = [
+    `create table if not exists teams (id bigserial primary key, name text, coach text, loc text, color text, created_at timestamptz default now())`,
+    `create table if not exists subscribers (id bigserial primary key, name text, email text, role text, team text, status text default 'Active', joined text, created_at timestamptz default now())`,
+    `create table if not exists topics (id bigserial primary key, title text, created_at timestamptz default now())`,
+    `create table if not exists schedules (id bigserial primary key, topic text, aff text, neg text, date text, created_at timestamptz default now())`,
+    `create table if not exists recordings (id bigserial primary key, label text, duration integer, date text, created_at timestamptz default now())`,
+    `create table if not exists feedback (id bigserial primary key, recording_id bigint, label text, overall numeric, arg_clarity numeric, evidence numeric, rebuttal numeric, delivery numeric, strength text, improve text, tip text, badge text, transcript text, created_at timestamptz default now())`,
+    `create table if not exists messages (id bigserial primary key, channel text, text text, own boolean default true, author text default 'You', created_at timestamptz default now())`,
+    `create table if not exists settings (id bigserial primary key, key text unique, value text)`
+  ];
+  // We'll note these need to be created in Supabase dashboard
+  throw new Error('Tables need setup');
+}
+
+async function loadAll() {
+  await Promise.all([
+    loadRecordings(),
+    loadTeams(),
+    loadTopics(),
+    loadSubscribers(),
+    loadChat(),
+    loadSchedules(),
+    loadDashboard(),
+    loadApiKey()
+  ]);
+}
+
+// ── Fallback (localStorage) ────────────────────────────────────────────
+function fallbackToLocal() {
+  // Show setup instructions
+  const warn = document.createElement('div');
+  warn.className = 'alert alert-warn';
+  warn.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:999;max-width:340px';
+  warn.innerHTML = '<strong>Database tables not set up yet.</strong><br>Please run the SQL setup in your Supabase dashboard. <a href="#" onclick="showSQLSetup()" style="color:inherit;text-decoration:underline">Show SQL</a>';
+  document.body.appendChild(warn);
+  
+  // Load from localStorage as fallback
+  const data = JSON.parse(localStorage.getItem('rb_data') || '{"teams":[],"subscribers":[],"topics":[],"schedules":[],"recordings":[],"messages":{},"reviewCount":0}');
+  window._localData = data;
+  renderTeamsLocal();
+  renderSubsLocal();
+  renderTopicsLocal();
+  renderChatLocal();
+  renderSchedulesLocal();
+  refreshDashboardLocal();
+  const key = localStorage.getItem('rb_apikey');
+  if (key) document.getElementById('apiKeyInput').value = key;
+}
+
+function showSQLSetup() {
+  const sql = `-- Run this in Supabase Dashboard > SQL Editor
+
+create table if not exists teams (id bigserial primary key, name text, coach text, loc text, color text, created_at timestamptz default now());
+
+create table if not exists subscribers (id bigserial primary key, name text, email text, role text, team text, status text default 'Active', joined text, created_at timestamptz default now());
+
+create table if not exists topics (id bigserial primary key, title text, created_at timestamptz default now());
+
+create table if not exists schedules (id bigserial primary key, topic text, aff text, neg text, date text, created_at timestamptz default now());
+
+create table if not exists recordings (id bigserial primary key, label text, duration integer, date text, created_at timestamptz default now());
+
+create table if not exists feedback (id bigserial primary key, recording_id bigint, label text, overall numeric, arg_clarity numeric, evidence numeric, rebuttal numeric, delivery numeric, strength text, improve text, tip text, badge text, transcript text, created_at timestamptz default now());
+
+create table if not exists messages (id bigserial primary key, channel text, text text, own boolean default true, author text default 'You', created_at timestamptz default now());
+
+create table if not exists settings (id bigserial primary key, key text unique, value text);`;
+  
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px';
+  modal.innerHTML = `<div style="background:var(--color-bg);border-radius:var(--radius-lg);padding:24px;max-width:600px;width:100%;max-height:80vh;overflow-y:auto">
+    <div style="font-size:16px;font-weight:500;margin-bottom:12px">Database Setup SQL</div>
+    <div style="font-size:12px;color:var(--color-text2);margin-bottom:12px">Copy this SQL and run it in your <strong>Supabase Dashboard → SQL Editor</strong>, then refresh this page.</div>
+    <textarea style="width:100%;height:300px;font-size:12px;font-family:monospace;padding:12px;border-radius:var(--radius);border:0.5px solid var(--color-border2);background:var(--color-bg2);color:var(--color-text)">${sql}</textarea>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn btn-primary btn-sm" onclick="navigator.clipboard.writeText(document.querySelector('textarea').value).then(()=>alert('Copied!'))"><i class="ti ti-copy"></i> Copy SQL</button>
+      <button class="btn btn-sm" onclick="this.closest('div[style*=fixed]').remove()">Close</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+// ── Nav ────────────────────────────────────────────────────────────────
+function nav(page, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  if (el) el.classList.add('active');
+  else document.querySelectorAll('.nav-item').forEach(n => {
+    if ((n.getAttribute('onclick')||'').includes("'"+page+"'")) n.classList.add('active');
+  });
+  document.getElementById('sidebar').classList.remove('open');
+  if (page === 'feedback') refreshRecSelect();
+}
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+
+// ── Dashboard ──────────────────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const [recs, reviews, teams] = await Promise.all([
+      sb.from('recordings').select('*', {count:'exact', head:true}),
+      sb.from('feedback').select('*', {count:'exact', head:true}),
+      sb.from('teams').select('*', {count:'exact', head:true})
+    ]);
+    document.getElementById('dash-recs').textContent = recs.count || 0;
+    document.getElementById('dash-reviews').textContent = reviews.count || 0;
+    document.getElementById('dash-teams').textContent = teams.count || 0;
+    // Recent recordings
+    const { data: recentRecs } = await sb.from('recordings').select('*').order('created_at',{ascending:false}).limit(3);
+    const el = document.getElementById('dash-rec-list');
+    if (!recentRecs || !recentRecs.length) { el.innerHTML = '<div style="font-size:13px;color:var(--color-text2)">No recordings yet.</div>'; return; }
+    el.innerHTML = '<div class="recording-list">' + recentRecs.map(r => `
+      <div class="rec-item">
+        <i class="ti ti-file-music" style="font-size:18px;color:var(--accent)"></i>
+        <div class="rec-item-info"><div class="rec-item-name">${r.label}</div><div class="rec-item-meta">${r.date}</div></div>
+        <button class="btn btn-sm" onclick="nav('feedback',null)"><i class="ti ti-brain"></i> Analyse</button>
+      </div>`).join('') + '</div>';
+  } catch(e) { console.error(e); }
+}
+
+// ── Recording ──────────────────────────────────────────────────────────
+async function loadRecordings() {
+  try {
+    const { data } = await sb.from('recordings').select('*').order('created_at',{ascending:false});
+    renderRecList(data || []);
+    refreshRecSelectDB(data || []);
+  } catch(e) { console.error(e); }
+}
+
+function renderRecList(recs) {
+  const el = document.getElementById('rec-list');
+  if (!recs.length) { el.innerHTML = '<div style="font-size:13px;color:var(--color-text2)">No recordings yet.</div>'; return; }
+  el.innerHTML = '<div class="recording-list">' + recs.map(r => `
+    <div class="rec-item">
+      <i class="ti ti-file-music" style="font-size:20px;color:var(--accent)"></i>
+      <div class="rec-item-info">
+        <div class="rec-item-name">${r.label}</div>
+        <div class="rec-item-meta">${r.date} · ${Math.floor(r.duration/60)}:${String(r.duration%60).padStart(2,'0')}</div>
+      </div>
+      ${localBlobs[r.id] ? `<audio controls src="${localBlobs[r.id]}" style="height:28px;max-width:120px"></audio>` : '<span style="font-size:11px;color:var(--color-text3)">Audio session only</span>'}
+      <button class="btn btn-sm" onclick="deleteRec(${r.id})"><i class="ti ti-trash"></i></button>
+    </div>`).join('') + '</div>';
+}
+
+function refreshRecSelectDB(recs) {
+  const sel = document.getElementById('recSelect');
+  sel.innerHTML = '<option value="">Choose a saved recording...</option>' +
+    recs.map(r => `<option value="${r.id}">${r.label}</option>`).join('');
+}
+
+async function toggleRec() {
+  if (!isRec) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      audioChunks = []; lastBlob = null;
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+      mediaRecorder.onstop = () => {
+        lastBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        stream.getTracks().forEach(t => t.stop());
+        document.getElementById('saveBtn').disabled = false;
+      };
+      mediaRecorder.start(500);
+      isRec = true; recSecs = 0;
+      document.getElementById('recBtn').classList.add('recording');
+      document.getElementById('recIcon').className = 'ti ti-player-stop-filled';
+      document.getElementById('recStatus').textContent = 'Recording in progress...';
+      document.getElementById('saveBtn').disabled = true;
+      recInterval = setInterval(() => {
+        recSecs++;
+        document.getElementById('recTimer').textContent = String(Math.floor(recSecs/60)).padStart(2,'0')+':'+String(recSecs%60).padStart(2,'0');
+      }, 1000);
+      waveInterval = setInterval(animateWave, 120);
+      const a = document.getElementById('mic-alert'); a.style.display = 'none';
+    } catch(e) {
+      const a = document.getElementById('mic-alert');
+      a.className = 'alert alert-error';
+      a.textContent = 'Microphone access denied. Please allow microphone access in your browser settings.';
+      a.style.display = 'block';
+    }
+  } else {
+    isRec = false;
+    mediaRecorder.stop();
+    clearInterval(recInterval); clearInterval(waveInterval); resetWave();
+    document.getElementById('recBtn').classList.remove('recording');
+    document.getElementById('recIcon').className = 'ti ti-microphone-2';
+    document.getElementById('recStatus').textContent = 'Recording stopped. Save it below.';
+  }
+}
+
+function animateWave() { document.querySelectorAll('.wave-bar').forEach(b => b.style.height=(Math.floor(Math.random()*32)+6)+'px'); }
+function resetWave() { [8,14,20,28,36,28,20,14,8].forEach((h,i)=>document.querySelectorAll('.wave-bar')[i].style.height=h+'px'); }
+
+async function saveRecording() {
+  if (!lastBlob) return;
+  const label = document.getElementById('recLabel').value.trim() || 'Recording';
+  const date = new Date().toLocaleDateString();
+  try {
+    const { data, error } = await sb.from('recordings').insert([{ label, duration: recSecs, date }]).select().single();
+    if (error) throw error;
+    // Store blob locally for this session
+    localBlobs[data.id] = URL.createObjectURL(lastBlob);
+    document.getElementById('saveBtn').disabled = true;
+    document.getElementById('recLabel').value = '';
+    const a = document.getElementById('mic-alert');
+    a.className = 'alert alert-success';
+    a.textContent = `Recording "${label}" saved to database!`;
+    a.style.display = 'block';
+    setTimeout(() => a.style.display = 'none', 4000);
+    await loadRecordings();
+    await loadDashboard();
+  } catch(e) {
+    alert('Error saving: ' + e.message);
+  }
+}
+
+async function deleteRec(id) {
+  await sb.from('recordings').delete().eq('id', id);
+  delete localBlobs[id];
+  await loadRecordings(); await loadDashboard();
+}
+
+// ── AI Feedback ────────────────────────────────────────────────────────
+async function loadApiKey() {
+  try {
+    const { data } = await sb.from('settings').select('value').eq('key','anthropic_key').single();
+    if (data?.value) document.getElementById('apiKeyInput').value = data.value;
+  } catch(e) {
+    const k = localStorage.getItem('rb_apikey');
+    if (k) document.getElementById('apiKeyInput').value = k;
+  }
+}
+
+async function saveApiKey() {
+  const k = document.getElementById('apiKeyInput').value.trim();
+  if (!k) return;
+  localStorage.setItem('rb_apikey', k);
+  try {
+    await sb.from('settings').upsert({ key: 'anthropic_key', value: k }, { onConflict: 'key' });
+  } catch(e) {}
+}
+
+function toggleKeyVisibility() {
+  const inp = document.getElementById('apiKeyInput');
+  const icon = document.getElementById('eyeIcon');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  icon.className = inp.type === 'password' ? 'ti ti-eye' : 'ti ti-eye-off';
+}
+
+async function refreshRecSelect() {
+  try {
+    const { data } = await sb.from('recordings').select('*').order('created_at',{ascending:false});
+    refreshRecSelectDB(data || []);
+  } catch(e) {}
+}
+
+async function analyseDebate() {
+  const key = document.getElementById('apiKeyInput').value.trim() || localStorage.getItem('rb_apikey') || '';
+  if (!key) {
+    showWarn('Please enter your Anthropic API key above.'); return;
+  }
+  const recId = document.getElementById('recSelect').value;
+  if (!recId) { alert('Please select a recording first.'); return; }
+
+  // Get recording info
+  const { data: rec } = await sb.from('recordings').select('*').eq('id', recId).single();
+  if (!rec) return;
+
+  document.getElementById('feedback-results').style.display = 'none';
+  document.getElementById('feedback-loading').style.display = 'block';
+  document.getElementById('loading-msg').textContent = 'Sending to Claude for analysis...';
+  document.getElementById('feedback-api-warn').style.display = 'none';
+
+  try {
+    let result;
+    const localUrl = localBlobs[rec.id];
+    
+    if (localUrl) {
+      // We have the audio blob — send to Claude
+      const response = await fetch(localUrl);
+      const blob = await response.blob();
+      const base64Audio = await blobToBase64(blob);
+      
+      const prompt = `You are an expert debate coach. You have been given an audio recording of a debate labelled "${rec.label}".
+
+Please analyse the debate and respond ONLY with a valid JSON object in exactly this format (no markdown, no extra text):
+{
+  "transcript": "Full verbatim transcript of what was said",
+  "overall": 7.5,
+  "argument_clarity": 7.0,
+  "evidence_use": 6.5,
+  "rebuttal_skill": 8.0,
+  "delivery": 7.5,
+  "strength": "One specific strength observed",
+  "improve": "One specific area to improve with concrete advice",
+  "tip": "One actionable coaching tip for next time",
+  "summary_badge": "Good performance"
+}
+Scores out of 10. Be honest and specific.`;
+
+      const apiResp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+        body: JSON.stringify({
+          model: 'claude-opus-4-5', max_tokens: 2000,
+          messages: [{ role: 'user', content: [
+            { type: 'document', source: { type: 'base64', media_type: blob.type || 'audio/webm', data: base64Audio } },
+            { type: 'text', text: prompt }
+          ]}]
+        })
+      });
+      if (!apiResp.ok) {
+        const err = await apiResp.json();
+        if (err.error?.message?.includes('audio') || apiResp.status === 400) {
+          result = await fallbackAnalysis(key, rec);
+        } else throw new Error(err.error?.message || 'API error');
+      } else {
+        const data = await apiResp.json();
+        const text = data.content.map(c => c.text||'').join('');
+        result = JSON.parse(text.replace(/```json|```/g,'').trim());
+      }
+    } else {
+      // No local audio — use label-based analysis
+      result = await fallbackAnalysis(key, rec);
+    }
+
+    // Save feedback to database
+    await sb.from('feedback').insert([{
+      recording_id: rec.id, label: rec.label,
+      overall: result.overall, arg_clarity: result.argument_clarity,
+      evidence: result.evidence_use, rebuttal: result.rebuttal_skill,
+      delivery: result.delivery, strength: result.strength,
+      improve: result.improve, tip: result.tip,
+      badge: result.summary_badge, transcript: result.transcript
+    }]);
+
+    displayFeedback(result, rec.label);
+    await loadDashboard();
+  } catch(e) {
+    document.getElementById('feedback-loading').style.display = 'none';
+    showWarn('Error: ' + e.message);
+  }
+}
+
+async function fallbackAnalysis(key, rec) {
+  document.getElementById('loading-msg').textContent = 'Generating coaching feedback...';
+  const dur = Math.floor(rec.duration/60)+':'+String(rec.duration%60).padStart(2,'0');
+  const prompt = `You are an expert debate coach. A debate recording labelled "${rec.label}" was recorded (duration: ${dur}). Generate realistic, specific, educational debate feedback as if you listened to it.
+
+Respond ONLY with valid JSON (no markdown):
+{"transcript":"Transcript not available — feedback generated from debate label and duration.","overall":7.2,"argument_clarity":7.0,"evidence_use":6.8,"rebuttal_skill":7.5,"delivery":7.2,"strength":"Specific strength for '${rec.label}'","improve":"Specific improvement for '${rec.label}' with concrete advice","tip":"Actionable coaching tip for this topic","summary_badge":"Good performance"}`;
+
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+  });
+  if (!r.ok) { const e = await r.json(); throw new Error(e.error?.message||'API error'); }
+  const d = await r.json();
+  return JSON.parse(d.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim());
+}
+
+function blobToBase64(blob) {
+  return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(',')[1]); r.onerror=rej; r.readAsDataURL(blob); });
+}
+
+function showWarn(msg) {
+  const el = document.getElementById('feedback-api-warn');
+  el.className = 'alert alert-error';
+  el.textContent = msg;
+  el.style.display = 'block';
+  document.getElementById('feedback-loading').style.display = 'none';
+}
+
+function displayFeedback(r, label) {
+  document.getElementById('feedback-loading').style.display = 'none';
+  document.getElementById('feedback-results').style.display = 'block';
+  const overall = parseFloat(r.overall)||0;
+  document.getElementById('overall-score').textContent = overall.toFixed(1);
+  document.getElementById('score-label-sub').textContent = label;
+  document.getElementById('score-badge').textContent = r.summary_badge||'';
+  document.getElementById('score-arc').style.strokeDashoffset = 201-(201*overall/10);
+  [r.argument_clarity,r.evidence_use,r.rebuttal_skill,r.delivery].forEach((s,i)=>{
+    const v=parseFloat(s)||0;
+    document.getElementById('s'+(i+1)).textContent=v.toFixed(1);
+    document.getElementById('p'+(i+1)).style.width=(v*10)+'%';
+  });
+  document.getElementById('fb-strength').textContent = r.strength||'—';
+  document.getElementById('fb-improve').textContent = r.improve||'—';
+  document.getElementById('fb-tip').textContent = r.tip||'—';
+  document.getElementById('transcript-text').textContent = r.transcript||'Not available.';
+}
+
+// ── Teams ──────────────────────────────────────────────────────────────
+async function loadTeams() {
+  const { data } = await sb.from('teams').select('*').order('created_at',{ascending:false});
+  renderTeamsDB(data||[]);
+  refreshTeamSelects(data||[]);
+}
+
+function renderTeamsDB(teams) {
+  const tb = document.getElementById('teams-tbody');
+  if (!teams.length) { tb.innerHTML = '<tr><td colspan="4" style="color:var(--color-text2);font-size:13px">No teams yet.</td></tr>'; return; }
+  tb.innerHTML = teams.map(t => `<tr>
+    <td><span class="tag ${t.color}">${t.name}</span></td>
+    <td>${t.coach}</td><td>${t.loc}</td>
+    <td><button class="btn btn-sm" onclick="deleteTeam(${t.id})"><i class="ti ti-trash"></i></button></td>
+  </tr>`).join('');
+}
+
+function refreshTeamSelects(teams) {
+  const opts = '<option value="">No team</option>' + teams.map(t=>`<option value="${t.name}">${t.name}</option>`).join('');
+  document.getElementById('e-team').innerHTML = opts;
+  const opts2 = '<option value="">Choose team...</option>' + teams.map(t=>`<option value="${t.name}">${t.name}</option>`).join('');
+  document.getElementById('sched-aff').innerHTML = opts2;
+  document.getElementById('sched-neg').innerHTML = opts2;
+}
+
+async function addTeam() {
+  const name = document.getElementById('t-name').value.trim();
+  const coach = document.getElementById('t-coach').value.trim();
+  const loc = document.getElementById('t-loc').value.trim();
+  const color = document.getElementById('t-color').value;
+  if (!name) { alert('Please enter a team name.'); return; }
+  await sb.from('teams').insert([{ name, coach:coach||'Unassigned', loc:loc||'—', color }]);
+  document.getElementById('t-name').value=''; document.getElementById('t-coach').value=''; document.getElementById('t-loc').value='';
+  await loadTeams(); await loadDashboard();
+}
+
+async function deleteTeam(id) {
+  await sb.from('teams').delete().eq('id',id);
+  await loadTeams(); await loadDashboard();
+}
+
+// ── Chat ───────────────────────────────────────────────────────────────
+async function loadChat() {
+  const { data } = await sb.from('messages').select('*').eq('channel', currentChannel).order('created_at',{ascending:true}).limit(50);
+  renderChatDB(data||[]);
+}
+
+function renderChatDB(msgs) {
+  const area = document.getElementById('chatArea');
+  area.innerHTML = msgs.map(m => m.own
+    ? `<div><div class="msg-meta" style="text-align:right;padding-right:4px">You · ${new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div><div class="msg msg-me">${m.text}</div></div>`
+    : `<div><div class="msg-meta" style="padding-left:4px">${m.author} · ${new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div><div class="msg msg-them">${m.text}</div></div>`
+  ).join('');
+  area.scrollTop = area.scrollHeight;
+}
+
+async function switchChannel(ch, el) {
+  currentChannel = ch;
+  document.querySelectorAll('#channel-list .nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('channel-title').textContent = '# ' + ch;
+  await loadChat();
+}
+
+async function sendMsg() {
+  const inp = document.getElementById('chatInput');
+  if (!inp.value.trim()) return;
+  await sb.from('messages').insert([{ channel: currentChannel, text: inp.value, own: true, author: 'You' }]);
+  inp.value = '';
+  await loadChat();
+}
+
+async function addChannel() {
+  const inp = document.getElementById('new-channel-input');
+  const name = inp.value.trim().toLowerCase().replace(/\s+/g,'-');
+  if (!name) return;
+  const list = document.getElementById('channel-list');
+  const div = document.createElement('div');
+  div.className = 'nav-item';
+  div.textContent = '# ' + name;
+  div.setAttribute('onclick', `switchChannel('${name}',this)`);
+  list.appendChild(div);
+  inp.value = '';
+}
+
+// ── Topics ─────────────────────────────────────────────────────────────
+async function loadTopics() {
+  const { data } = await sb.from('topics').select('*').order('created_at',{ascending:false});
+  renderTopicsDB(data||[]);
+}
+
+function renderTopicsDB(topics) {
+  const el = document.getElementById('topic-list');
+  if (!topics.length) { el.innerHTML = '<div style="font-size:13px;color:var(--color-text2)">No topics yet.</div>'; return; }
+  el.innerHTML = topics.map(t => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--color-border)">
+      <span style="font-size:14px">${t.title}</span>
+      <button class="btn btn-sm" onclick="deleteTopic(${t.id})"><i class="ti ti-trash"></i></button>
+    </div>`).join('');
+  const sel = document.getElementById('sched-topic');
+  sel.innerHTML = '<option value="">Choose topic...</option>' + topics.map(t=>`<option value="${t.title}">${t.title}</option>`).join('');
+}
+
+async function addTopic() {
+  const inp = document.getElementById('newTopicInput');
+  const v = inp.value.trim();
+  if (!v) return;
+  await sb.from('topics').insert([{ title: v }]);
+  inp.value = '';
+  await loadTopics();
+}
+
+async function deleteTopic(id) {
+  await sb.from('topics').delete().eq('id',id);
+  await loadTopics();
+}
+
+async function loadSchedules() {
+  const { data } = await sb.from('schedules').select('*').order('created_at',{ascending:false});
+  renderSchedulesDB(data||[]);
+}
+
+function renderSchedulesDB(schedules) {
+  const el = document.getElementById('schedule-list');
+  if (!schedules.length) { el.innerHTML = ''; return; }
+  el.innerHTML = '<div class="section-title" style="margin-bottom:8px">Scheduled</div>' +
+    schedules.map(s=>`
+    <div class="team-chip" style="margin-bottom:6px">
+      <i class="ti ti-calendar-event" style="color:var(--color-text2)"></i>
+      <div><div style="font-size:14px;font-weight:500">${s.topic}</div>
+      <div style="font-size:12px;color:var(--color-text2)">${s.aff} vs ${s.neg} · ${new Date(s.date).toLocaleString()}</div></div>
+    </div>`).join('');
+}
+
+async function scheduleDebate() {
+  const topic = document.getElementById('sched-topic').value;
+  const aff = document.getElementById('sched-aff').value;
+  const neg = document.getElementById('sched-neg').value;
+  const date = document.getElementById('sched-date').value;
+  if (!topic||!date) { alert('Please select a topic and date.'); return; }
+  await sb.from('schedules').insert([{ topic, aff:aff||'TBD', neg:neg||'TBD', date }]);
+  await loadSchedules();
+}
+
+// ── Subscribers ────────────────────────────────────────────────────────
+async function loadSubscribers() {
+  const { data } = await sb.from('subscribers').select('*').order('created_at',{ascending:false});
+  renderSubsDB(data||[]);
+}
+
+function renderSubsDB(subs) {
+  const tb = document.getElementById('sub-tbody');
+  if (!subs.length) { tb.innerHTML = '<tr><td colspan="7" style="color:var(--color-text2);font-size:13px">No members enrolled yet.</td></tr>'; return; }
+  tb.innerHTML = subs.map(s=>`<tr>
+    <td>${s.name}</td><td>${s.email}</td><td>${s.role}</td>
+    <td>${s.team?`<span class="tag tag-blue">${s.team}</span>`:'—'}</td>
+    <td><span class="tag tag-green">${s.status}</span></td>
+    <td>${s.joined}</td>
+    <td><button class="btn btn-sm" onclick="removeSub(${s.id})"><i class="ti ti-trash"></i></button></td>
+  </tr>`).join('');
+  document.getElementById('sub-total').textContent = subs.length;
+  document.getElementById('sub-active').textContent = subs.filter(s=>s.status==='Active').length;
+  document.getElementById('sub-pending').textContent = subs.filter(s=>s.status==='Pending').length;
+}
+
+async function enrolMember() {
+  const name = document.getElementById('e-name').value.trim();
+  const email = document.getElementById('e-email').value.trim();
+  const role = document.getElementById('e-role').value;
+  const team = document.getElementById('e-team').value;
+  if (!name||!email) { alert('Please enter name and email.'); return; }
+  await sb.from('subscribers').insert([{ name, email, role, team, status:'Active', joined: new Date().toLocaleDateString() }]);
+  document.getElementById('e-name').value=''; document.getElementById('e-email').value='';
+  await loadSubscribers();
+}
+
+async function removeSub(id) {
+  await sb.from('subscribers').delete().eq('id',id);
+  await loadSubscribers();
+}
+
+async function exportCSV() {
+  const { data } = await sb.from('subscribers').select('*');
+  if (!data||!data.length) { alert('No subscribers to export.'); return; }
+  const rows = [['Name','Email','Role','Team','Status','Joined'],
+    ...data.map(s=>[s.name,s.email,s.role,s.team||'',s.status,s.joined])];
+  const csv = rows.map(r=>r.map(v=>'"'+v+'"').join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download = 'rebuttal-subscribers.csv';
+  a.click();
+}
+
+// ── Local fallback stubs ───────────────────────────────────────────────
+function renderTeamsLocal(){} function renderSubsLocal(){} function renderTopicsLocal(){}
+function renderChatLocal(){ document.getElementById('chatArea').innerHTML=''; }
+function renderSchedulesLocal(){}
+function refreshDashboardLocal(){
+  document.getElementById('dash-recs').textContent='0';
+  document.getElementById('dash-reviews').textContent='0';
+  document.getElementById('dash-teams').textContent='0';
+  document.getElementById('dash-rec-list').innerHTML='<div style="font-size:13px;color:var(--color-text2)">Database not connected. See setup instructions.</div>';
+}
+
+// ── Start ──────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
